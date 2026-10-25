@@ -24,15 +24,17 @@
               "enableVertiParquet": true
             },
             "storeSettings": {
-              "type": "LakehouseWriteSettings"
+              "type": "AzureBlobStorageWriteSettings"
             },
             "datasetSettings": {
               "type": "Parquet",
               "typeProperties": {
                 "location": {
                   "type": "LakehouseLocation",
-                  "folderPath": "landing",
-                  "fileName": "test"
+                  "folderPath": {
+                    "value": "@concat('landing/test/')",
+                    "type": "Expression"
+                  }
                 },
                 "compressionCodec": "snappy"
               },
