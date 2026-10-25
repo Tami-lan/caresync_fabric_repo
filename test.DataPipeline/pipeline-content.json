@@ -1,0 +1,77 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "PostgreSqlSource",
+            "query": "select * from public.hospitals",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "PostgreSqlTable",
+              "schema": [],
+              "externalReferences": {
+                "connection": "e438fbab-94f3-47f1-b982-b68e54bea5dc"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "formatSettings": {
+              "type": "ParquetWriteSettings",
+              "enableVertiParquet": true
+            },
+            "storeSettings": {
+              "type": "LakehouseWriteSettings"
+            },
+            "datasetSettings": {
+              "type": "Parquet",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation",
+                  "folderPath": "landing",
+                  "fileName": "test"
+                },
+                "compressionCodec": "snappy"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "caresync_project_lh",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "7acd945a-ac99-99c3-42d6-ef063001ca4f",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Copy data1",
+        "dependsOn": []
+      }
+    ]
+  }
+}
