@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SQLDatabase",
+    "displayName": "sql-db-caresync"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e3baf9cd-e10b-8cf1-44e3-791d652353cd"
+  }
+}
