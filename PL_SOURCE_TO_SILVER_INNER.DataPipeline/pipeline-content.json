@@ -151,17 +151,6 @@
             ]
           }
         ]
-      },
-      {
-        "type": "SetVariable",
-        "policy": {
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Set variable1",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
-        "dependsOn": []
       }
     ],
     "parameters": {
