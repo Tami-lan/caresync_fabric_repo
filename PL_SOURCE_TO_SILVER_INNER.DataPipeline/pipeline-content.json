@@ -86,7 +86,7 @@
               "enableVertiParquet": true
             },
             "storeSettings": {
-              "type": "LakehouseWriteSettings"
+              "type": "AzureBlobStorageWriteSettings"
             },
             "datasetSettings": {
               "type": "Parquet",
@@ -146,6 +146,91 @@
           },
           {
             "activity": "Set Start Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "d0331cf3-9550-81ce-4dd7-9840d6138917",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "source_system": {
+              "value": {
+                "value": "@activity('Read Table Details').output.firstRow.source_system",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "table_name": {
+              "value": {
+                "value": "@activity('Read Table Details').output.firstRow.source_table_name",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "landing_timestamp": {
+              "value": {
+                "value": "@variables('start_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Landing To Bronze",
+        "dependsOn": [
+          {
+            "activity": "Source to Landing Ingestion",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "060df70e-f4c9-aba6-466c-17418531821e",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "landing_timestamp": {
+              "value": {
+                "value": "@variables('start_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "table_name": {
+              "value": {
+                "value": "@activity('Read Table Details').output.firstRow.source_table_name",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze To Silver",
+        "dependsOn": [
+          {
+            "activity": "Landing To Bronze",
             "dependencyConditions": [
               "Succeeded"
             ]
