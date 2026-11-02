@@ -95,6 +95,7 @@ updated_df.write.format('delta')\
 
 # CELL ********************
 
+notebookutils.notebook.exit("Success")
 
 # METADATA ********************
 
