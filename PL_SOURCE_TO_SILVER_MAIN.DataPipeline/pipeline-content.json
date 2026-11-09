@@ -54,20 +54,125 @@
           },
           "activities": [
             {
-              "type": "SetVariable",
+              "type": "InvokePipeline",
               "typeProperties": {
-                "variableName": "test",
-                "value": {
-                  "value": "@string(item().table_id)",
-                  "type": "Expression"
-                }
+                "parameters": {
+                  "table_id": {
+                    "value": "@item().table_id",
+                    "type": "Expression"
+                  },
+                  "adf_run_id": {
+                    "value": "@pipeline().parameters.adf_run_id",
+                    "type": "Expression"
+                  }
+                },
+                "waitOnCompletion": true,
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "pipelineId": "a449a891-0bf2-ba89-4e97-617c902e8227",
+                "operationType": "InvokeFabricPipeline"
+              },
+              "externalReferences": {
+                "connection": "2432f936-5f2c-418d-9860-9bc153d112a1"
               },
               "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
                 "secureInput": false,
                 "secureOutput": false
               },
-              "name": "Set variable1",
+              "name": "Ingest from Source to Silver",
+              "dependsOn": [
+                {
+                  "activity": "Insert In Progress Status",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Script",
+              "typeProperties": {
+                "scripts": [
+                  {
+                    "text": {
+                      "value": "insert into ctrl.audit_log\n(adf_run_id,table_id,stage,status,start_time)\nvalues\n('@{pipeline().parameters.adf_run_id}',@{item().table_id},'SOURCE_TO_SILVER','IN_PROGRESS',SYSUTCDATETIME())",
+                      "type": "Expression"
+                    },
+                    "type": "Query"
+                  }
+                ],
+                "scriptBlockExecutionTimeout": "02:00:00"
+              },
+              "connectionSettings": {
+                "name": "sql-db-caresync",
+                "properties": {
+                  "type": "FabricSqlDatabase",
+                  "typeProperties": {
+                    "artifactId": "e3baf9cd-e10b-8cf1-44e3-791d652353cd",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "externalReferences": {
+                    "connection": "fb728b1b-3163-4f34-bfb1-d644ff5a3f75"
+                  },
+                  "annotations": []
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Insert In Progress Status",
               "dependsOn": []
+            },
+            {
+              "type": "Script",
+              "typeProperties": {
+                "scripts": [
+                  {
+                    "text": {
+                      "value": "update ctrl.audit_log\nset status = 'FAILED', end_time =SYSUTCDATETIME()\nwhere adf_run_id = '@{pipeline().parameters.adf_run_id}' and\ntable_id = @{item().table_id}",
+                      "type": "Expression"
+                    },
+                    "type": "Query"
+                  }
+                ],
+                "scriptBlockExecutionTimeout": "02:00:00"
+              },
+              "connectionSettings": {
+                "name": "sql-db-caresync",
+                "properties": {
+                  "type": "FabricSqlDatabase",
+                  "typeProperties": {
+                    "artifactId": "e3baf9cd-e10b-8cf1-44e3-791d652353cd",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "externalReferences": {
+                    "connection": "fb728b1b-3163-4f34-bfb1-d644ff5a3f75"
+                  },
+                  "annotations": []
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Update Failed Status",
+              "dependsOn": [
+                {
+                  "activity": "Ingest from Source to Silver",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -86,6 +191,10 @@
       "source_system": {
         "type": "string",
         "defaultValue": "neon_postgres"
+      },
+      "adf_run_id": {
+        "type": "string",
+        "defaultValue": "a1"
       }
     },
     "variables": {

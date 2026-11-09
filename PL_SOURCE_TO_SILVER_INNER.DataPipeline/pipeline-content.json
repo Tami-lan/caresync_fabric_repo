@@ -236,11 +236,60 @@
             ]
           }
         ]
+      },
+      {
+        "type": "Script",
+        "typeProperties": {
+          "scripts": [
+            {
+              "text": {
+                "value": "update ctrl.audit_log\nset status = 'SUCCESS', end_time =SYSUTCDATETIME(), records_written=@{activity('Bronze To Silver').output.runOutput}\nwhere adf_run_id = '@{pipeline().parameters.adf_run_id}' and table_id=@{pipeline().parameters.table_id}",
+                "type": "Expression"
+              },
+              "type": "Query"
+            }
+          ],
+          "scriptBlockExecutionTimeout": "02:00:00"
+        },
+        "connectionSettings": {
+          "name": "sql-db-caresync",
+          "properties": {
+            "type": "FabricSqlDatabase",
+            "typeProperties": {
+              "artifactId": "e3baf9cd-e10b-8cf1-44e3-791d652353cd",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            "externalReferences": {
+              "connection": "fb728b1b-3163-4f34-bfb1-d644ff5a3f75"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Update success status",
+        "dependsOn": [
+          {
+            "activity": "Bronze To Silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
       }
     ],
     "parameters": {
       "table_id": {
         "type": "string"
+      },
+      "adf_run_id": {
+        "type": "string",
+        "defaultValue": "a1"
       }
     },
     "variables": {

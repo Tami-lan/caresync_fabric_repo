@@ -83,19 +83,29 @@ updated_df.write.format('delta')\
 
 # CELL ********************
 
-# MAGIC %%sql
-# MAGIC select * from caresync_project_lh.silver.hospitals
+record_count=updated_df.count()
+print(record_count)
 
 # METADATA ********************
 
 # META {
-# META   "language": "sparksql",
+# META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
 
 # CELL ********************
 
-notebookutils.notebook.exit("Success")
+notebookutils.notebook.exit(str(record_count))
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 
 # METADATA ********************
 
