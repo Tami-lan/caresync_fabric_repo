@@ -33,6 +33,8 @@
 
 landing_timestamp = '2026-10-26_02:51:44'
 table_name= 'hospitals'
+load_type ='FULL'
+merge_keys='patient_id'
 
 # METADATA ********************
 

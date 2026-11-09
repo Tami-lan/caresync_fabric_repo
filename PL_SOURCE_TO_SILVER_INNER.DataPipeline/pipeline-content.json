@@ -243,7 +243,7 @@
           "scripts": [
             {
               "text": {
-                "value": "update ctrl.audit_log\nset status = 'SUCCESS', end_time =SYSUTCDATETIME(), records_written=@{activity('Bronze To Silver').output.runOutput}\nwhere adf_run_id = '@{pipeline().parameters.adf_run_id}' and table_id=@{pipeline().parameters.table_id}",
+                "value": "update ctrl.audit_log\nset status = 'SUCCESS', end_time =SYSUTCDATETIME(), records_written=@{int(activity('Bronze To Silver').output.result.exitValue)}\nwhere adf_run_id = '@{pipeline().parameters.adf_run_id}' and table_id=@{pipeline().parameters.table_id}",
                 "type": "Expression"
               },
               "type": "Query"
