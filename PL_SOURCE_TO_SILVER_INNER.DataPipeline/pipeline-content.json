@@ -66,7 +66,7 @@
           "source": {
             "type": "PostgreSqlSource",
             "query": {
-              "value": "select * from public.@{activity('Read Table Details').output.firstRow.source_table_name}\n@{\n    if(equals(activity('Read Table Details').output.firstRow.load_type,'FULL')\n,'' \n,concat('where', activity('Read Table Details').output.firstRow.watermark_column, '>','''',variables('watermark_value'),'''') \n)\n}",
+              "value": "select * from public.@{activity('Read Table Details').output.firstRow.source_table_name}\n@{\n    if(equals(activity('Read Table Details').output.firstRow.load_type,'FULL')\n,'' \n,concat(' where ', activity('Read Table Details').output.firstRow.watermark_column, ' > ','''',variables('watermark_value'),'''') \n)\n}",
               "type": "Expression"
             },
             "queryTimeout": "02:00:00",
@@ -211,6 +211,20 @@
                 "type": "Expression"
               },
               "type": "string"
+            },
+            "load_type": {
+              "value": {
+                "value": "@activity('Read Table Details').output.firstRow.load_type",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "merge_keys": {
+              "value": {
+                "value": "@coalesce(activity('Read Table Details').output.firstRow.merge_keys,'') ",
+                "type": "Expression"
+              },
+              "type": "string"
             }
           }
         },
@@ -290,7 +304,7 @@
                 "source": {
                   "type": "FabricSqlDatabaseSource",
                   "sqlReaderQuery": {
-                    "value": "select from ctrl.watermark\nwhere table_id = @{pipeline().parameters.table_id}",
+                    "value": "select watermark_value \nfrom ctrl.watermark\nwhere table_id = @{pipeline().parameters.table_id}",
                     "type": "Expression"
                   },
                   "partitionOption": "None",
@@ -362,6 +376,65 @@
           },
           {
             "activity": "Set Start Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "IfCondition",
+        "typeProperties": {
+          "expression": {
+            "value": "@not(equals(activity('Read Table Details').output.firstRow.load_type,'FULL' ))",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "type": "Script",
+              "typeProperties": {
+                "scripts": [
+                  {
+                    "text": {
+                      "value": "update ctrl.watermark\nset watermark_value =SYSUTCDATETIME()\nwhere table_id =@{pipeline().parameters.table_id}",
+                      "type": "Expression"
+                    },
+                    "type": "Query"
+                  }
+                ],
+                "scriptBlockExecutionTimeout": "02:00:00"
+              },
+              "connectionSettings": {
+                "name": "sql-db-caresync",
+                "properties": {
+                  "type": "FabricSqlDatabase",
+                  "typeProperties": {
+                    "artifactId": "e3baf9cd-e10b-8cf1-44e3-791d652353cd",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "externalReferences": {
+                    "connection": "fb728b1b-3163-4f34-bfb1-d644ff5a3f75"
+                  },
+                  "annotations": []
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Update watermark value",
+              "dependsOn": []
+            }
+          ],
+          "ifFalseActivities": []
+        },
+        "name": "checking load type and update watermark value",
+        "dependsOn": [
+          {
+            "activity": "Bronze To Silver",
             "dependencyConditions": [
               "Succeeded"
             ]
